@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的实用新标签页</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="container">
+        <div class="weather-widget">
+            <div class="weather-info">
+                <i class="fas fa-cloud-sun"></i>
+                <span class="temperature">--°C</span>
+                <span class="location">正在获取位置...</span>
+            </div>
+        </div>
+
+        <div class="settings">
+            <h3>自定义背景</h3>
+            <label for="backgroundImageUrl">图片 URL:</label>
+            <input type="text" id="backgroundImageUrl" placeholder="输入图片 URL">
+            <button id="applyBackgroundUrl">应用</button>
+            <label for="backgroundImageLocal">本地图片:</label>
+            <input type="file" id="backgroundImageLocal" accept="image/*">
+        </div>
+
+        <div class="search-bar">
+            <select id="searchEngine">
+                <option value="google">Google</option>
+                <option value="bing">Bing</option>
+                <option value="baidu">Baidu</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="搜索或输入网址">
+            <button id="searchButton">搜索</button>
+            <button id="imageSearchButton">搜图</button>
+        </div>
+
+        <div class="quick-links">
+            <h3>快速访问</h3>
+            <div class="links-grid">
+                <div class="link-item">
+                    <i class="fab fa-github"></i>
+                    <span>GitHub</span>
+                </div>
+                <div class="link-item">
+                    <i class="fab fa-youtube"></i>
+                    <span>YouTube</span>
+                </div>
+                <div class="link-item">
+                    <i class="fab fa-twitter"></i>
+                    <span>Twitter</span>
+                </div>
+                <div class="link-item">
+                    <i class="fas fa-plus"></i>
+                    <span>添加</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="todo-section">
+            <h3>待办事项</h3>
+            <div class="todo-input">
+                <input type="text" id="todoInput" placeholder="添加新的待办事项">
+                <button id="addTodo"><i class="fas fa-plus"></i></button>
+            </div>
+            <ul id="todoList" class="todo-list">
+            </ul>
+        </div>
+
+        <div id="imageSearchResults">
+        </div>
+
+        <div id="installPrompt" class="install-prompt" style="display:none;">
+            <p>想将此页面固定到您的设备上，像一个应用一样使用吗？</p>
+            <button id="installButton">安装</button>
+            <button id="dismissInstallPrompt">稍后提醒</button>
+        </div>
+    </div>
+    <script src="script/script.js"></script>
+</body>
+
+</html>
