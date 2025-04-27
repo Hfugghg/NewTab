@@ -15,6 +15,10 @@
         <i class="fas fa-moon"></i>
     </div>
 
+    <div class="settings-toggle">
+        <i class="fas fa-chevron-right"></i>
+    </div>
+
     <div class="container">
         <div class="weather-widget">
             <div class="weather-info">
@@ -22,15 +26,6 @@
                 <span class="temperature">--°C</span>
                 <span class="location">正在获取位置...</span>
             </div>
-        </div>
-
-        <div class="settings">
-            <h3>自定义背景</h3>
-            <label for="backgroundImageUrl">图片 URL:</label>
-            <input type="text" id="backgroundImageUrl" placeholder="输入图片 URL">
-            <button id="applyBackgroundUrl">应用</button>
-            <label for="backgroundImageLocal">本地图片:</label>
-            <input type="file" id="backgroundImageLocal" accept="image/*">
         </div>
 
         <div class="search-bar">
@@ -83,6 +78,36 @@
             <p>想将此页面固定到您的设备上，像一个应用一样使用吗？</p>
             <button id="installButton">安装</button>
             <button id="dismissInstallPrompt">稍后提醒</button>
+        </div>
+    </div>
+    <div class="settings-panel">
+        <div class="settings-content">
+            <h3>设置</h3>
+            <div class="settings-group">
+                <h4>背景设置</h4>
+                <label for="backgroundImageUrl">图片 URL:</label>
+                <input type="text" id="backgroundImageUrl" placeholder="输入图片 URL">
+                <button id="applyBackgroundUrl">应用</button>
+                <label for="backgroundImageLocal">本地图片:</label>
+                <input type="file" id="backgroundImageLocal" accept="image/*">
+            </div>
+            <div class="settings-group">
+                <h4>显示设置</h4>
+                <label>
+                    背景透明度:
+                    <input type="range" id="opacitySlider" min="0" max="1" step="0.1" value="0.8">
+                </label>
+                <label>
+                    模糊程度:
+                    <input type="range" id="blurSlider" min="0" max="20" step="1" value="5">
+                </label>
+            </div>
+            <div class="settings-group">
+                <h4>天气设置</h4>
+                <label for="defaultLocation">默认位置:</label>
+                <input type="text" id="defaultLocation" placeholder="输入默认位置">
+                <button id="saveLocation">保存</button>
+            </div>
         </div>
     </div>
     <script src="script/script.js"></script>

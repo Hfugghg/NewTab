@@ -5,6 +5,9 @@
     --text-color: #333;
     --card-bg: rgba(255, 255, 255, 0.8);
     --shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    --container-opacity: 0.8;
+    --blur-amount: 5px;
+    --transition-duration: 0.3s;
 }
 
 [data-theme="dark"] {
@@ -14,10 +17,15 @@
     --text-color: #f8f9fa;
     --card-bg: rgba(33, 37, 41, 0.8);
     --shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    --input-bg: #343a40;
+    --input-border: #495057;
+    --input-text: #f8f9fa;
+    --button-bg: #495057;
+    --button-hover: #6c757d;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: sans-serif;
     margin: 0;
     background-color: var(--background-color);
     color: var(--text-color);
@@ -25,233 +33,565 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
     background-size: cover;
     background-position: center;
-    transition: all 0.3s ease-in-out;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    transition: background-color var(--transition-duration) ease, color var(--transition-duration) ease;
 }
 
+.container {
+    background-color: rgba(255, 255, 255, var(--container-opacity));
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 800px;
+    box-sizing: border-box;
+    backdrop-filter: blur(var(--blur-amount));
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+h3 {
+    color: #555;
+    margin-top: 0;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* 主题切换 */
 .theme-toggle {
     position: fixed;
     top: 20px;
     right: 20px;
-    cursor: pointer;
-    font-size: 24px;
-    color: var(--text-color);
-    transition: transform 0.3s ease;
-}
-
-.theme-toggle:hover {
-    transform: rotate(30deg);
-}
-
-.container {
-    background-color: var(--card-bg);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: var(--shadow);
-    text-align: center;
-    max-width: 800px;
-    width: 90%;
-    backdrop-filter: blur(10px);
-}
-
-.weather-widget {
-    margin-bottom: 20px;
-    padding: 15px;
-    border-radius: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.weather-info {
+    background: var(--card-bg);
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 15px;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--primary-color);
+    outline: none;
+    transition: all var(--transition-duration) ease;
+    box-shadow: var(--shadow);
+    z-index: 1000;
+}
+
+.theme-toggle i {
+    transition: transform var(--transition-duration) ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    background: var(--primary-color);
+    color: white;
+}
+
+[data-theme="dark"] .theme-toggle {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+    background: var(--secondary-color);
+    color: var(--background-color);
+}
+
+/* 天气小部件 */
+.weather-widget {
+    background-color: rgba(233, 236, 239, var(--container-opacity));
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    text-align: center;
+    backdrop-filter: blur(var(--blur-amount));
 }
 
 .weather-info i {
-    font-size: 2em;
+    font-size: 24px;
+    margin-right: 10px;
+    color: #f39c12;
 }
 
 .temperature {
-    font-size: 1.5em;
+    font-size: 18px;
     font-weight: bold;
-}
-
-.location {
-    font-size: 1.1em;
-}
-
-.settings,
-.search-bar,
-.quick-links,
-.todo-section {
-    margin-bottom: 25px;
-}
-
-.settings h3,
-.quick-links h3,
-.todo-section h3 {
-    margin-top: 0;
-    color: var(--primary-color);
-}
-
-.settings label,
-.settings input,
-.settings button {
+    color: var(--text-color);
     margin-right: 10px;
 }
 
+.location {
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+.weather-retry-button {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all var(--transition-duration) ease;
+}
+
+.weather-retry-button:hover {
+    background-color: var(--secondary-color);
+    transform: scale(1.05);
+}
+
+[data-theme="dark"] .weather-retry-button {
+    background-color: var(--button-bg);
+}
+
+[data-theme="dark"] .weather-retry-button:hover {
+    background-color: var(--button-hover);
+}
+
+/* 设置 */
+.settings label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-size: 14px;
+}
+
+.settings input[type="text"],
+.settings input[type="file"] {
+    width: calc(100% - 12px);
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.settings button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+    margin-top: 5px;
+}
+
+.settings button:hover {
+    background-color: #0056b3;
+}
+
+/* 搜索栏 */
 .search-bar {
     display: flex;
+    margin-bottom: 20px;
     gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
 }
 
 .search-bar select,
 .search-bar input[type="text"],
 .search-bar button {
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid var(--secondary-color);
+    padding: 10px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
     font-size: 16px;
-    background-color: var(--card-bg);
-    color: var(--text-color);
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    transition: all var(--transition-duration) ease;
+}
+
+.search-bar select {
+    width: 100px;
+}
+
+.search-bar input[type="text"] {
+    flex-grow: 1;
 }
 
 .search-bar button {
-    background-color: var(--primary-color);
+    background-color: var(--button-bg);
     color: white;
+    border: none;
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: background-color var(--transition-duration) ease;
+}
+
+#imageSearchButton {
+    background-color: var(--secondary-color);
 }
 
 .search-bar button:hover {
-    transform: translateY(-2px);
+    background-color: var(--button-hover);
 }
 
+#imageSearchButton:hover {
+    background-color: var(--button-hover);
+}
+
+/* 快速访问 */
 .quick-links {
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    margin-bottom: 20px;
 }
 
 .links-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
 }
 
 .link-item {
+    background-color: var(--card-bg);
+    border-radius: 6px;
+    padding: 15px 10px;
+    text-align: center;
+    color: var(--text-color);
+    text-decoration: none;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 15px;
-    background-color: var(--card-bg);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.link-item:hover {
-    transform: translateY(-3px);
+    justify-content: center;
+    transition: background-color var(--transition-duration) ease;
+    backdrop-filter: blur(var(--blur-amount));
 }
 
 .link-item i {
-    font-size: 24px;
-    color: var(--primary-color);
+    font-size: 20px;
+    margin-bottom: 5px;
 }
 
+.link-item span {
+    font-size: 14px;
+}
+
+.link-item:hover {
+    background-color: var(--button-bg);
+}
+
+/* 待办事项 */
 .todo-section {
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    background-color: var(--card-bg);
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(var(--blur-amount));
 }
 
 .todo-input {
     display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+    gap: 5px;
 }
 
-.todo-input input {
-    flex: 1;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid var(--secondary-color);
-    background-color: var(--card-bg);
-    color: var(--text-color);
+.todo-input input[type="text"] {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: var(--input-bg);
+    color: var(--input-text);
 }
 
 .todo-input button {
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    background-color: var(--primary-color);
+    background-color: var(--button-bg);
     color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
     cursor: pointer;
+    font-size: 16px;
+    transition: background-color var(--transition-duration) ease;
+}
+
+.todo-input button:hover {
+    background-color: var(--button-hover);
 }
 
 .todo-list {
     list-style: none;
     padding: 0;
-    margin: 0;
 }
 
 .todo-list li {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 12px;
-    margin-bottom: 8px;
-    background-color: var(--card-bg);
-    border-radius: 8px;
+    align-items: center;
 }
 
-.todo-list li.completed {
+.todo-list li:last-child {
+    border-bottom: none;
+}
+
+.todo-list li span {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.todo-list li button {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 16px;
+    outline: none;
+}
+
+.todo-list li button:hover {
+    color: #c82333;
+}
+
+.todo-list li.completed span {
     text-decoration: line-through;
-    opacity: 0.7;
+    color: #777;
 }
 
-.install-prompt {
-    background-color: rgba(224, 247, 250, 0.8);
-    padding: 15px;
-    border-radius: 8px;
+/* 图片搜索结果 */
+#imageSearchResults {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
     margin-top: 20px;
+}
+
+#imageSearchResults img {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 安装提示 */
+.install-prompt {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     text-align: center;
+    margin-top: 20px;
+}
+
+.install-prompt p {
+    margin-bottom: 10px;
+    color: #555;
 }
 
 .install-prompt button {
-    padding: 10px 15px;
-    margin: 0 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-#installButton {
-    background-color: #4caf50;
+    background-color: #007bff;
     color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 0 5px;
+    transition: background-color 0.3s ease;
 }
 
 #dismissInstallPrompt {
-    background-color: #f44336;
+    background-color: #6c757d;
+}
+
+.install-prompt button:hover {
+    background-color: #0056b3;
+}
+
+#dismissInstallPrompt:hover {
+    background-color: #545b62;
+}
+
+/* 透明度控制按钮样式 */
+.opacity-control {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    backdrop-filter: blur(5px);
+}
+
+.opacity-control label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-color);
+}
+
+.opacity-control input[type="range"] {
+    width: 150px;
+}
+
+.invert-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: var(--primary-color);
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.invert-toggle:hover {
+    background-color: var(--secondary-color);
+}
+
+/* 设置面板样式 */
+.settings-panel {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 300px;
+    background-color: var(--card-bg);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.settings-panel.expanded {
+    transform: translateX(0);
+}
+
+.settings-toggle {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-bg);
+    padding: 8px 5px;
+    cursor: pointer;
+    z-index: 1001;
+    border-radius: 0 5px 5px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(var(--blur-amount));
+    opacity: var(--container-opacity);
+}
+
+.settings-toggle:hover {
+    background: var(--primary-color);
     color: white;
 }
 
-@media (max-width: 600px) {
-    .container {
-        padding: 15px;
-    }
+.settings-toggle i {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
 
-    .search-bar {
-        flex-direction: column;
-    }
+.settings-panel.expanded .settings-toggle {
+    display: none;
+}
 
-    .links-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+.settings-content {
+    padding: 20px;
+}
+
+.settings-group {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.settings-group h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.settings-group label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.settings-group input[type="text"],
+.settings-group input[type="file"],
+.settings-group input[type="range"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid var(--input-border);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    box-sizing: border-box;
+}
+
+.settings-group button {
+    background-color: var(--button-bg);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.settings-group button:hover {
+    background-color: var(--button-hover);
+}
+
+.settings-panel.expanded+.container {
+    margin-right: 0;
+    left: 0;
+}
+
+.container.settings-expanded {
+    margin-right: 0;
+    left: 0;
+}
+
+/* 暗色主题适配 */
+[data-theme="dark"] .settings-panel {
+    background-color: rgba(33, 37, 41, 0.9);
+}
+
+[data-theme="dark"] .settings-group {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .settings-group input[type="text"],
+[data-theme="dark"] .settings-group input[type="file"] {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--input-text);
+}
+
+/* 确保设置面板和三角形图标在暗色主题下可见 */
+[data-theme="dark"] .settings-toggle {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+[data-theme="dark"] .settings-toggle:hover {
+    background-color: var(--secondary-color);
+    color: white;
 }

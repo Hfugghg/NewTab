@@ -3,6 +3,41 @@ const installButton = document.getElementById('installButton');
 const installPrompt = document.getElementById('installPrompt');
 const dismissInstallPrompt = document.getElementById('dismissInstallPrompt');
 
+// 侧边栏 设置面板相关
+const settingsPanel = document.querySelector('.settings-panel');
+const settingsToggle = document.querySelector('.settings-toggle');
+const container = document.querySelector('.container');
+
+console.log('settingsToggle element:', settingsToggle);
+
+// 侧边栏 初始化设置面板状态
+settingsPanel.classList.remove('expanded');
+container.classList.remove('settings-expanded');
+
+// 侧边栏 设置面板切换功能
+settingsToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isExpanded = settingsPanel.classList.toggle('expanded');
+
+    // 更新箭头图标方向
+    const icon = settingsToggle.querySelector('i');
+    icon.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+
+    // 根据侧边栏状态显示/隐藏按钮
+    settingsToggle.style.display = isExpanded ? 'none' : 'flex';
+});
+
+// 侧边栏 点击设置面板外部时关闭面板
+document.addEventListener('click', (e) => {
+    if (!settingsPanel.contains(e.target) && !settingsToggle.contains(e.target)) {
+        settingsPanel.classList.remove('expanded');
+        // 重置箭头图标方向并显示按钮
+        const icon = settingsToggle.querySelector('i');
+        icon.style.transform = 'rotate(0deg)';
+        settingsToggle.style.display = 'flex';
+    }
+});
+
 const backgroundImageUrlInput = document.getElementById('backgroundImageUrl');
 const applyBackgroundUrlButton = document.getElementById('applyBackgroundUrl');
 const backgroundImageLocalInput = document.getElementById('backgroundImageLocal');
@@ -144,17 +179,52 @@ loadSavedBackground();
 const themeToggle = document.querySelector('.theme-toggle');
 const body = document.body;
 
-themeToggle.addEventListener('click', () => {
+// 添加主题切换动画
+function toggleTheme() {
     const isDark = body.getAttribute('data-theme') === 'dark';
     body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeToggle.innerHTML = isDark ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+
+    // 更新图标
+    const icon = themeToggle.querySelector('i');
+    if (isDark) {
+        icon.className = 'fas fa-moon';
+        icon.style.transform = 'rotate(0deg)';
+    } else {
+        icon.className = 'fas fa-sun';
+        icon.style.transform = 'rotate(180deg)';
+    }
+
+    // 保存主题设置
     localStorage.setItem('theme', isDark ? 'light' : 'dark');
-});
+
+    // 添加过渡效果
+    body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+    setTimeout(() => {
+        body.style.transition = '';
+    }, 300);
+}
 
 // 初始化主题
-const savedTheme = localStorage.getItem('theme') || 'light';
-body.setAttribute('data-theme', savedTheme);
-themeToggle.innerHTML = savedTheme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    body.setAttribute('data-theme', savedTheme);
+
+    // 设置初始图标
+    const icon = themeToggle.querySelector('i');
+    if (savedTheme === 'dark') {
+        icon.className = 'fas fa-sun';
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        icon.className = 'fas fa-moon';
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+// 添加点击事件监听
+themeToggle.addEventListener('click', toggleTheme);
+
+// 初始化主题
+initTheme();
 
 // 天气功能
 const weatherInfo = document.querySelector('.weather-info');
@@ -169,7 +239,9 @@ async function getWeather() {
         // 先检查浏览器是否支持地理位置
         if (!navigator.geolocation) {
             console.log('浏览器不支持地理位置，使用默认位置');
-            return await fetchWeatherWithLocation(DEFAULT_LOCATION);
+            const defaultWeather = await fetchWeatherWithLocation(DEFAULT_LOCATION);
+            hideRetryButton();
+            return defaultWeather;
         }
 
         console.log('开始获取位置信息...');
@@ -213,13 +285,17 @@ async function getWeather() {
             );
         });
 
-        return await fetchWeatherWithLocation(position);
+        const weather = await fetchWeatherWithLocation(position);
+        hideRetryButton();
+        return weather;
     } catch (error) {
         console.error('获取天气信息失败:', error);
         temperature.textContent = '--°C';
         locationText.textContent = error.message || '无法获取天气信息';
         const weatherIcon = document.querySelector('.weather-info i');
         weatherIcon.className = 'fas fa-exclamation-triangle';
+        showRetryButton();
+        throw error;
     }
 }
 
@@ -321,15 +397,18 @@ function getWeatherDescription(code) {
     return descriptions[code] || '未知天气';
 }
 
-// 添加重试按钮
+// 修改重试按钮的创建和样式
 const weatherWidget = document.querySelector('.weather-widget');
 const retryButton = document.createElement('button');
+retryButton.className = 'weather-retry-button';
 retryButton.textContent = '重试';
-retryButton.style.marginTop = '10px';
-retryButton.style.padding = '5px 10px';
-retryButton.style.cursor = 'pointer';
-retryButton.addEventListener('click', getWeather);
+retryButton.style.display = 'none'; // 默认隐藏
 weatherWidget.appendChild(retryButton);
+
+retryButton.addEventListener('click', () => {
+    retryButton.style.display = 'none'; // 点击重试时先隐藏按钮
+    getWeather();
+});
 
 // 初始加载天气
 getWeather();
@@ -490,3 +569,61 @@ window.addEventListener('beforeinstallprompt', (e) => {
     deferredPrompt = e;
     installPrompt.style.display = 'block';
 });
+
+// 侧边栏 设置控制
+const opacitySlider = document.getElementById('opacitySlider');
+const blurSlider = document.getElementById('blurSlider');
+const defaultLocationInput = document.getElementById('defaultLocation');
+const saveLocationButton = document.getElementById('saveLocation');
+
+// 侧边栏 加载保存的设置
+function loadSettings() {
+    const savedOpacity = localStorage.getItem('containerOpacity');
+    const savedBlur = localStorage.getItem('blurAmount');
+    const savedLocation = localStorage.getItem('defaultLocation');
+
+    if (savedOpacity) {
+        document.documentElement.style.setProperty('--container-opacity', savedOpacity);
+        document.getElementById('opacitySlider').value = savedOpacity;
+    }
+
+    if (savedBlur) {
+        document.documentElement.style.setProperty('--blur-amount', `${savedBlur}px`);
+        document.getElementById('blurSlider').value = savedBlur;
+    }
+
+    if (savedLocation) {
+        document.getElementById('defaultLocation').value = savedLocation;
+    }
+}
+
+// 添加透明度和模糊度滑块的事件监听器
+opacitySlider.addEventListener('input', (e) => {
+    const value = e.target.value;
+    document.documentElement.style.setProperty('--container-opacity', value);
+    localStorage.setItem('containerOpacity', value);
+});
+
+blurSlider.addEventListener('input', (e) => {
+    const value = e.target.value;
+    document.documentElement.style.setProperty('--blur-amount', `${value}px`);
+    localStorage.setItem('blurAmount', value);
+});
+
+// 初始化设置
+loadSettings();
+
+// 添加显示/隐藏重试按钮的辅助函数
+function showRetryButton() {
+    const retryButton = document.querySelector('.weather-retry-button');
+    if (retryButton) {
+        retryButton.style.display = 'block';
+    }
+}
+
+function hideRetryButton() {
+    const retryButton = document.querySelector('.weather-retry-button');
+    if (retryButton) {
+        retryButton.style.display = 'none';
+    }
+}
