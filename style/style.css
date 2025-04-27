@@ -596,20 +596,18 @@ h3 {
     color: white;
 }
 
-/* 针对小屏幕优化搜索栏 */
 @media (max-width: 600px) {
   .search-bar {
-    flex-direction: column; /* 将搜索栏元素垂直排列 */
+    display: flex; /* 确保使用 flex 布局 */
+    flex-direction: column; /* 垂直排列内部元素 */
+    width: 100%; /* 占据容器的 100% 宽度 */
+    margin-bottom: 20px; /* 保持间距 */
+    gap: 10px; /* 内部元素间距 */
   }
 
   .search-bar select,
   .search-bar input[type="text"],
   .search-bar button {
-    width: 100%; /* 让每个元素占据一行 */
-    margin-bottom: 5px; /* 增加元素之间的垂直间距 */
-  }
-
-  .search-bar select {
-    width: 100%; /* 确保 select 元素也占据整行 */
+    width: 100%; /* 内部元素占据 100% 宽度 */
   }
 }
