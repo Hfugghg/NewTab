@@ -179,19 +179,31 @@ async function getWeather() {
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     console.log('成功获取位置:', pos.coords);
-                    // 使用逆地理编码获取城市名称
-                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            const city = data.address.city || data.address.town || data.address.village || DEFAULT_LOCATION;
-                            resolve(city);
-                        })
-                        .catch(() => resolve(DEFAULT_LOCATION));
+                    // 直接使用经纬度获取天气
+                    resolve({
+                        latitude: pos.coords.latitude,
+                        longitude: pos.coords.longitude
+                    });
                 },
                 (error) => {
                     console.error('位置获取错误:', error);
+                    let errorMessage = '无法获取位置信息';
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = '请允许访问位置信息';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = '位置信息不可用';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = '获取位置超时';
+                            break;
+                    }
                     console.log('使用默认位置（北京）');
-                    resolve(DEFAULT_LOCATION);
+                    resolve({
+                        latitude: 39.9042,
+                        longitude: 116.4074
+                    });
                 },
                 {
                     enableHighAccuracy: true,
@@ -211,7 +223,7 @@ async function getWeather() {
     }
 }
 
-async function fetchWeatherWithLocation(location) {
+async function fetchWeatherWithLocation(position) {
     try {
         // 显示正在加载的状态
         const tempElement = document.querySelector('.temperature');
@@ -221,93 +233,51 @@ async function fetchWeatherWithLocation(location) {
         locationElement.textContent = '正在获取天气...';
 
         console.log('开始获取天气信息...');
-        const searchEngine = searchEngineSelect.value;
-        let searchUrl = '';
 
-        // 根据选择的搜索引擎构建搜索URL
-        switch (searchEngine) {
-            case 'google':
-                searchUrl = `https://www.google.com/search?q=${encodeURIComponent(location + '天气')}`;
-                break;
-            case 'bing':
-                searchUrl = `https://www.bing.com/search?q=${encodeURIComponent(location + '天气')}`;
-                break;
-            case 'baidu':
-                searchUrl = `https://www.baidu.com/s?wd=${encodeURIComponent(location + '天气')}`;
-                break;
-        }
-
-        // 直接获取搜索结果页面
-        const response = await fetch(searchUrl, {
-            method: 'GET',
-            headers: {
-                'Accept': 'text/html',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
-        });
+        // 使用 Open-Meteo API
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${position.latitude}&longitude=${position.longitude}&current_weather=true`);
 
         if (!response.ok) {
             throw new Error(`天气服务暂时不可用: ${response.status}`);
         }
 
-        const html = await response.text();
-        console.log('获取到搜索结果页面');
+        const data = await response.json();
 
-        // 解析搜索结果页面
-        let tempValue = '';
-        let weatherCondition = '';
-
-        if (searchEngine === 'baidu') {
-            // 解析百度天气结果
-            const tempMatch = html.match(/<span class="op_weather_temp">([^<]+)<\/span>/);
-            const conditionMatch = html.match(/<span class="op_weather_condition">([^<]+)<\/span>/);
-
-            if (tempMatch) tempValue = tempMatch[1];
-            if (conditionMatch) weatherCondition = conditionMatch[1];
-        } else if (searchEngine === 'google') {
-            // 解析Google天气结果
-            const tempMatch = html.match(/<span class="wob_t">([^<]+)<\/span>/);
-            const conditionMatch = html.match(/<span class="wob_dc">([^<]+)<\/span>/);
-
-            if (tempMatch) tempValue = tempMatch[1];
-            if (conditionMatch) weatherCondition = conditionMatch[1];
-        } else if (searchEngine === 'bing') {
-            // 解析Bing天气结果
-            const tempMatch = html.match(/<div class="wtr_currTemp">([^<]+)<\/div>/);
-            const conditionMatch = html.match(/<div class="wtr_currCond">([^<]+)<\/div>/);
-
-            if (tempMatch) tempValue = tempMatch[1];
-            if (conditionMatch) weatherCondition = conditionMatch[1];
-        }
-
-        if (!tempValue || !weatherCondition) {
-            throw new Error('无法解析天气数据');
-        }
-
-        tempElement.textContent = tempValue;
-        locationElement.textContent = location;
+        // 更新天气信息
+        tempElement.textContent = `${Math.round(data.current_weather.temperature)}°C`;
+        locationElement.textContent = '当前位置';
 
         const weatherIcon = document.querySelector('.weather-info i');
-        const conditionLower = weatherCondition.toLowerCase();
+        const weatherCode = data.current_weather.weathercode;
 
-        // 根据天气状况设置图标
-        if (conditionLower.includes('雷') || conditionLower.includes('闪电')) {
+        // 根据天气代码设置图标
+        // 天气代码说明：https://open-meteo.com/en/docs
+        if (weatherCode >= 95) {
             weatherIcon.className = 'fas fa-bolt';
-        } else if (conditionLower.includes('雨')) {
-            weatherIcon.className = 'fas fa-cloud-rain';
-        } else if (conditionLower.includes('雪')) {
+        } else if (weatherCode >= 80) {
+            weatherIcon.className = 'fas fa-cloud-showers-heavy';
+        } else if (weatherCode >= 70) {
             weatherIcon.className = 'fas fa-snowflake';
-        } else if (conditionLower.includes('雾') || conditionLower.includes('霾')) {
+        } else if (weatherCode >= 60) {
+            weatherIcon.className = 'fas fa-cloud-rain';
+        } else if (weatherCode >= 50) {
             weatherIcon.className = 'fas fa-smog';
-        } else if (conditionLower.includes('晴')) {
-            weatherIcon.className = 'fas fa-sun';
-        } else if (conditionLower.includes('云') || conditionLower.includes('阴')) {
+        } else if (weatherCode >= 40) {
+            weatherIcon.className = 'fas fa-cloud';
+        } else if (weatherCode >= 30) {
+            weatherIcon.className = 'fas fa-cloud';
+        } else if (weatherCode >= 20) {
+            weatherIcon.className = 'fas fa-cloud';
+        } else if (weatherCode >= 10) {
             weatherIcon.className = 'fas fa-cloud';
         } else {
-            weatherIcon.className = 'fas fa-question';
+            weatherIcon.className = 'fas fa-sun';
         }
 
-        return { temperature: tempValue, condition: weatherCondition };
+        return {
+            temperature: data.current_weather.temperature,
+            condition: getWeatherDescription(weatherCode)
+        };
     } catch (error) {
         console.error('获取天气信息失败:', error);
         const tempElement = document.querySelector('.temperature');
@@ -319,6 +289,36 @@ async function fetchWeatherWithLocation(location) {
         weatherIcon.className = 'fas fa-exclamation-triangle';
         throw error;
     }
+}
+
+function getWeatherDescription(code) {
+    const descriptions = {
+        0: '晴朗',
+        1: '基本晴朗',
+        2: '部分多云',
+        3: '多云',
+        45: '雾',
+        48: '雾凇',
+        51: '小雨',
+        53: '中雨',
+        55: '大雨',
+        61: '小雨',
+        63: '中雨',
+        65: '大雨',
+        71: '小雪',
+        73: '中雪',
+        75: '大雪',
+        77: '冰雹',
+        80: '小雨',
+        81: '中雨',
+        82: '大雨',
+        85: '小雪',
+        86: '大雪',
+        95: '雷雨',
+        96: '雷雨带冰雹',
+        99: '强雷雨带冰雹'
+    };
+    return descriptions[code] || '未知天气';
 }
 
 // 添加重试按钮
